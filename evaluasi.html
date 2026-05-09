@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Evaluasi Wujud Zat & Model Partikel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           1. PENGATURAN LAYAR & AUTO SCALE
+           ========================================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html {
+            width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            background-color: #2b2b2b;
+            font-family: 'Nunito', sans-serif;
+            overflow: hidden;
+        }
+
+        #app-container {
+            width: 1280px; height: 720px;
+            background-color: #E6F4FE;
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; 
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            transform-origin: center center;
+        }
+
+        .bg-blob {
+            position: absolute; top: -100px; left: -100px;
+            width: 800px; height: 800px; background: #B3E5FC;
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            z-index: 0; opacity: 0.5;
+        }
+        
+        .desk {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
+            background: #E2E8F0; border-top: 6px solid #CBD5E1;
+            z-index: 0; display: flex; align-items: center; justify-content: space-around;
+        }
+        .drawer { width: 150px; height: 10px; background: #94A3B8; border-radius: 5px; opacity: 0.5;}
+
+        /* =========================================
+           2. TOMBOL NAVIGASI & HEADER
+           ========================================= */
+        .btn-nav {
+            position: absolute; z-index: 50; background: #FFFFFF;
+            color: #F59E0B; font-family: 'Fredoka', sans-serif;
+            font-size: 1.1rem; text-decoration: none;
+            padding: 8px 20px; border-radius: 30px; border: 4px solid #F59E0B;
+            box-shadow: 0 4px 0 #F59E0B; display: flex; align-items: center; gap: 8px;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .btn-nav:active { transform: translateY(4px); box-shadow: 0 0px 0 #F59E0B; }
+        .btn-menu { top: 15px; left: 15px; border-top-left-radius: 0;}
+
+        header {
+            position: relative; z-index: 10;
+            text-align: center; margin-top: 15px; 
+        }
+        h1.main-title {
+            font-family: 'Fredoka', sans-serif; font-size: 3rem; color: #00BFFF;
+            text-shadow: -2px -2px 0 #FFF, 2px -2px 0 #FFF, -2px 2px 0 #FFF, 2px 2px 0 #FFF, 0px 5px 0px rgba(0,0,0,0.1);
+            letter-spacing: 2px; margin-bottom: 5px; text-transform: uppercase;
+        }
+
+        /* =========================================
+           3. AREA KONTEN UTAMA
+           ========================================= */
+        .main-content {
+            position: relative; z-index: 10; flex: 1;
+            display: flex; justify-content: center; align-items: stretch;
+            padding: 5px 40px 75px 40px; /* 75px ruang untuk meja di bawah */
+        }
+
+        .card-view {
+            display: none; width: 100%; max-width: 1150px; 
+            height: 100%; max-height: 530px; /* DIPERLEBAR & TINGGI DITAMBAH AGAR TOMBOL AMAN */
+            background: #FFFFFF; border-radius: 25px; padding: 25px 40px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); flex-direction: column;
+            border: 4px solid #E2E8F0; overflow: hidden;
+        }
+        .card-view.active { display: flex; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: #F1F5F9; border-radius: 10px;}
+        ::-webkit-scrollbar-thumb { background: #00BFFF; border-radius: 10px; border: 2px solid #FFF;}
+
+        /* Progress Bar */
+        .progress-wrapper {
+            width: 100%; height: 14px; background: #E2E8F0;
+            border-radius: 10px; margin-bottom: 15px; overflow: hidden;
+            border: 2px solid #CBD5E1; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+        .progress-bar {
+            height: 100%; background: linear-gradient(90deg, #00BFFF, #4CAF50);
+            width: 0%; transition: width 0.4s ease;
+        }
+
+        /* Teks & Soal */
+        .section-title { font-size: 1.15rem; color: #F59E0B; font-weight: 900; text-transform: uppercase; margin-bottom: 5px; flex-shrink: 0;}
+        .question-text { font-size: 1.3rem; color: #1E293B; font-weight: 800; line-height: 1.4; margin-bottom: 20px; flex-shrink: 0;}
+
+        /* Pilihan Ganda & Benar Salah */
+        .options-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; flex: 1; overflow-y: auto;}
+        .opt-btn {
+            background: #F8FAFC; border: 3px solid #CBD5E1; padding: 12px 20px;
+            border-radius: 15px; font-weight: 700; cursor: pointer; text-align: left;
+            transition: 0.1s; color: #334155; font-size: 1.1rem; font-family: 'Nunito', sans-serif;
+        }
+        .opt-btn:hover { background: #F1F5F9; border-color: #94A3B8; }
+        .opt-btn.selected { 
+            border-color: #00BFFF; background: #E0F2FE; color: #0284C7;
+            box-shadow: 0 4px 0 #00BFFF; transform: translateY(-2px);
+        }
+
+        /* =========================================
+           4. ISIAN SINGKAT (PENGUNCIAN TOMBOL)
+           ========================================= */
+        .sa-container { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; 
+            margin-bottom: 15px; flex: 1; align-content: start;
+            min-height: 0; /* Agar tidak mendorong tombol ke luar kotak */
+            overflow-y: auto; /* Muncul scrollbar ringan HANYA di soal jika layar sangat kecil */
+            padding-right: 5px;
+        }
+        .sa-box { 
+            background: #F8FAFC; padding: 10px 15px; border-radius: 12px; 
+            border: 2px solid #E2E8F0; display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .sa-box:last-child {
+            grid-column: span 2; width: 60%; justify-self: center; /* Soal ke-5 ditaruh di tengah */
+        }
+        .sa-q-text { font-size: 1.05rem; color: #1E293B; font-weight: 800; margin-bottom: 6px; line-height: 1.3;}
+        .sa-input {
+            width: 100%; padding: 8px 12px; border-radius: 8px; border: 3px solid #CBD5E1;
+            font-family: 'Nunito', sans-serif; font-size: 1.05rem; font-weight: 700; color: #0284C7; outline: none; transition: 0.2s;
+        }
+        .sa-input:focus { border-color: #F59E0B; box-shadow: 0 0 10px rgba(245, 158, 11, 0.2); }
+
+        /* Tombol Aksi */
+        .btn-action {
+            background: #F59E0B; color: white; padding: 10px 40px; border: none; border-radius: 20px;
+            font-family: 'Fredoka', sans-serif; font-size: 1.2rem; cursor: pointer;
+            box-shadow: 0 5px 0 #D97706; align-self: flex-end; transition: 0.1s;
+            flex-shrink: 0; /* Mengunci tombol agar TIDAK TERPOTONG */
+            margin-top: auto;
+        }
+        .btn-action:active { transform: translateY(5px); box-shadow: none; }
+        .btn-action:disabled { background: #CBD5E1; box-shadow: 0 5px 0 #94A3B8; cursor: not-allowed; transform: none; }
+
+        /* Hasil View */
+        .result-box { text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1;}
+        .score-circle {
+            width: 160px; height: 160px; border-radius: 50%; border: 10px solid #00BFFF;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 4.5rem; font-family: 'Fredoka', sans-serif; color: #00BFFF; margin: 15px 0;
+            box-shadow: 0 10px 20px rgba(0,191,255,0.2);
+        }
+        .rank-text { font-family: 'Fredoka', sans-serif; font-size: 2.2rem; color: #1E293B; margin-bottom: 5px; }
+        .motif-text { font-size: 1.15rem; color: #4A5568; font-weight: 700; max-width: 650px; margin-bottom: 25px; line-height: 1.5; }
+
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <div class="bg-blob"></div>
+        <div class="desk"><div class="drawer"></div><div class="drawer"></div><div class="drawer"></div><div class="drawer"></div></div>
+
+        <a href="#" class="btn-nav btn-menu">🏠 KEMBALI KE MENU</a>
+
+        <header>
+            <h1 class="main-title">EVALUASI AKHIR</h1>
+        </header>
+
+        <div class="main-content">
+            
+            <div id="view-intro" class="card-view active" style="align-items: center; justify-content: center; text-align: center;">
+                <div style="font-size: 5rem; margin-bottom: 5px;">📝</div>
+                <div class="rank-text" style="color: #00BFFF;">Siap Menguji Pemahamanmu?</div>
+                <div class="motif-text" style="margin-bottom: 30px;">
+                    Evaluasi ini terdiri dari 10 soal Pilihan Ganda, 5 soal Benar/Salah, dan 5 soal Isian Singkat.
+                    Kerjakan dengan teliti untuk mencapai <b>Ketuntasan Minimal 80</b>. Semoga berhasil!
+                </div>
+                <button class="btn-action" style="background:#4CAF50; box-shadow: 0 5px 0 #388E3C; align-self: center;" onclick="startEval()">MULAI EVALUASI ➔</button>
+            </div>
+
+            <div id="view-single" class="card-view">
+                <div class="progress-wrapper"><div class="progress-bar" id="prog-single"></div></div>
+                <div class="section-title" id="sec-title">BAGIAN A: PILIHAN GANDA</div>
+                <div class="question-text" id="q-text">Pertanyaan akan muncul di sini...</div>
+                
+                <div class="options-grid" id="opt-container">
+                    </div>
+                
+                <button class="btn-action" id="btn-next-single" onclick="nextSingle()" disabled>SELANJUTNYA ➔</button>
+            </div>
+
+            <div id="view-sa" class="card-view">
+                <div class="progress-wrapper"><div class="progress-bar" style="width: 100%;"></div></div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; flex-shrink: 0;">
+                    <div class="section-title" style="margin: 0;">BAGIAN C: ISIAN SINGKAT</div>
+                    <div style="font-size: 0.95rem; color: #4A5568; font-weight: 800;">Jawablah dengan 1 atau 2 kata yang tepat.</div>
+                </div>
+                
+                <div class="sa-container" id="sa-container">
+                    </div>
+
+                <button class="btn-action" style="background:#00BFFF; box-shadow: 0 5px 0 #008CBA;" onclick="submitSA()">KIRIM SEMUA JAWABAN ✔</button>
+            </div>
+
+            <div id="view-result" class="card-view">
+                <div class="result-box">
+                    <div class="rank-text" id="res-rank">Hebat Sekali!</div>
+                    <div class="score-circle" id="res-score">100</div>
+                    <div class="motif-text" id="res-motif">Kamu telah menguasai materi wujud zat dengan sangat baik. Pertahankan prestasimu!</div>
+                    
+                    <div style="display: flex; gap: 20px;">
+                        <button class="btn-action" style="background:#F59E0B; box-shadow: 0 5px 0 #D97706;" onclick="location.reload()">ULANGI EVALUASI</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- AUTO SCALE ---
+        function scaleApp() {
+            const container = document.getElementById('app-container');
+            const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+            container.style.transform = `scale(${scale})`;
+        }
+        window.addEventListener('resize', scaleApp);
+        scaleApp();
+
+        // --- DATABASE SOAL ---
+        const questionsMCQ = [
+            { q: "Wujud zat yang memiliki bentuk dan volume yang selalu tetap adalah...", opts: ["A. Cair", "B. Padat", "C. Gas", "D. Plasma"], ans: 1 },
+            { q: "Saat merebus air hingga mendidih, akan muncul uap panas di atas panci. Peristiwa perubahan wujud ini disebut...", opts: ["A. Membeku", "B. Mengembun", "C. Menguap", "D. Menyublim"], ans: 2 },
+            { q: "Dilihat dari model partikelnya, zat yang jarak antar partikelnya sangat renggang dan bergerak sangat bebas tak beraturan terdapat pada...", opts: ["A. Es batu", "B. Minyak goreng", "C. Kayu", "D. Udara"], ans: 3 },
+            { q: "Saat kita menyemprotkan parfum di sudut kamar, wanginya akan segera menyebar ke seluruh ruangan. Hal ini membuktikan sifat zat gas yaitu...", opts: ["A. Partikelnya hanya bergetar di tempat", "B. Bentuk dan volume tidak tetap karena partikel bergerak bebas", "C. Memiliki volume yang selalu tetap meski bentuknya berubah", "D. Memiliki massa yang jauh lebih berat dari zat padat"], ans: 1 },
+            { q: "Kapur barus yang diletakkan di dalam lemari pakaian lama-kelamaan akan mengecil dan habis tanpa meninggalkan cairan. Peristiwa ini disebut...", opts: ["A. Mengembun", "B. Mencair", "C. Menyublim", "D. Mengkristal"], ans: 2 },
+            { q: "Apa yang terjadi pada pergerakan partikel suatu zat cair ketika zat tersebut dipanaskan?", opts: ["A. Bergerak semakin lambat", "B. Berhenti bergerak sepenuhnya", "C. Jarak antar partikel menjadi sangat rapat", "D. Bergerak semakin cepat karena energi bertambah"], ans: 3 },
+            { q: "Saat es batu dipindahkan dari freezer ke ruangan terbuka, es tersebut akan mencair. Hal ini terjadi karena es batu...", opts: ["A. Melepaskan kalor ke lingkungan", "B. Menyerap kalor dari lingkungan", "C. Mengalami penurunan suhu secara drastis", "D. Kehilangan partikel airnya"], ans: 1 },
+            { q: "Pembuatan es kering (dry ice) dari gas karbon dioksida memanfaatkan proses perubahan wujud gas langsung menjadi padat. Proses ini disebut...", opts: ["A. Deposisi (Mengkristal)", "B. Menyublim", "C. Kondensasi (Mengembun)", "D. Evaporasi (Menguap)"], ans: 0 },
+            { q: "Mengapa titik air embun pada daun di pagi hari cenderung berbentuk bulat/setengah lingkaran?", opts: ["A. Karena wujud cair memiliki bentuk tetap yang bulat", "B. Karena udara di sekitarnya menekan air secara ekstrem", "C. Karena adanya gaya tarik-menarik antar partikel air (kohesi) yang kuat", "D. Karena air di pagi hari mengalami proses penyubliman parsial"], ans: 2 },
+            { q: "Jika sebuah balon ditiup lalu dimasukkan ke dalam air panas, balon tersebut akan membesar. Konsep model partikel yang tepat menjelaskan peristiwa ini adalah...", opts: ["A. Jumlah partikel gas di dalam balon bertambah", "B. Partikel karet balon mencair menjadi lebih tipis", "C. Partikel gas menyerap kalor, bergerak lebih cepat, dan jaraknya merenggang", "D. Partikel udara di luar balon menekan lebih lemah"], ans: 2 }
+        ];
+
+        const questionsTF = [
+            { q: "Jarak antar partikel pada zat padat sangat rapat dan tersusun teratur, sehingga zat padat sangat sulit untuk ditekan (dikompresi).", opts: ["BENAR", "SALAH"], ans: 0 },
+            { q: "Es batu yang dibiarkan di atas meja akan mencair karena es tersebut melepaskan energi panas ke lingkungan sekitarnya.", opts: ["BENAR", "SALAH"], ans: 1 },
+            { q: "Pada saat air murni mendidih di suhu 100°C, suhunya akan terus naik jika kita terus membesarkan api kompornya.", opts: ["BENAR", "SALAH"], ans: 1 },
+            { q: "Terbentuknya butiran salju di awan adalah contoh peristiwa mengkristal (deposisi), yaitu wujud gas yang langsung berubah menjadi padat.", opts: ["BENAR", "SALAH"], ans: 0 },
+            { q: "Gaya tarik-menarik antar partikel (kohesi) pada zat cair lebih lemah dari zat padat, namun cukup kuat menahan partikelnya agar tidak melayang menjadi gas di suhu ruang.", opts: ["BENAR", "SALAH"], ans: 0 }
+        ];
+
+        const questionsSA = [
+            { q: "Peristiwa perubahan wujud gas berhamburan menjadi titik-titik air disebut...", keys: ["mengembun", "embun"] },
+            { q: "Zat yang partikelnya bergerak paling lambat dan hanya bergetar di posisinya berwujud...", keys: ["padat"] },
+            { q: "Saat logam besi dilelehkan (padat menjadi cair), besi memerlukan penambahan energi berupa...", keys: ["kalor", "panas", "energi panas"] },
+            { q: "Suhu spesifik ketika suatu zat padat mulai berubah wujud menjadi cair secara keseluruhan disebut titik...", keys: ["lebur", "leleh", "cair"] },
+            { q: "Pergerakan menyebar partikel gas dari tempat padat ke tempat kosong (seperti wangi parfum) disebut...", keys: ["difusi"] }
+        ];
+
+        // --- STATE VARIABEL ---
+        let totalScore = 0; 
+        let currentPart = 'MCQ'; 
+        let qIndex = 0;
+        let selectedOptionIndex = null;
+
+        const totalQuestionsForProgress = 20;
+
+        // --- FUNGSI LOGIKA ---
+        function switchView(viewId) {
+            document.querySelectorAll('.card-view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        }
+
+        function updateProgress() {
+            let base = (currentPart === 'MCQ') ? 0 : (currentPart === 'TF' ? 10 : 15);
+            let current = base + qIndex;
+            let percent = (current / totalQuestionsForProgress) * 100;
+            document.getElementById('prog-single').style.width = percent + '%';
+        }
+
+        function startEval() {
+            currentPart = 'MCQ'; qIndex = 0; totalScore = 0;
+            switchView('view-single');
+            loadSingleQuestion();
+        }
+
+        function loadSingleQuestion() {
+            let dataArr = (currentPart === 'MCQ') ? questionsMCQ : questionsTF;
+            let data = dataArr[qIndex];
+            
+            document.getElementById('sec-title').innerText = (currentPart === 'MCQ') ? "BAGIAN A: PILIHAN GANDA" : "BAGIAN B: BENAR ATAU SALAH";
+            
+            let num = (currentPart === 'MCQ') ? qIndex + 1 : qIndex + 11;
+            document.getElementById('q-text').innerText = `${num}. ${data.q}`;
+
+            const container = document.getElementById('opt-container');
+            container.innerHTML = '';
+            selectedOptionIndex = null;
+            document.getElementById('btn-next-single').disabled = true;
+
+            data.opts.forEach((optText, i) => {
+                let btn = document.createElement('div');
+                btn.className = 'opt-btn';
+                btn.innerText = optText;
+                btn.onclick = () => selectOption(btn, i);
+                container.appendChild(btn);
+            });
+
+            updateProgress();
+        }
+
+        function selectOption(btnElement, index) {
+            document.querySelectorAll('.opt-btn').forEach(b => b.classList.remove('selected'));
+            btnElement.classList.add('selected');
+            selectedOptionIndex = index;
+            document.getElementById('btn-next-single').disabled = false;
+        }
+
+        function nextSingle() {
+            let dataArr = (currentPart === 'MCQ') ? questionsMCQ : questionsTF;
+            let correctAnswer = dataArr[qIndex].ans;
+            
+            if (selectedOptionIndex === correctAnswer) {
+                totalScore += 5; 
+            }
+
+            qIndex++;
+            if (qIndex < dataArr.length) {
+                loadSingleQuestion();
+            } else {
+                if (currentPart === 'MCQ') {
+                    currentPart = 'TF'; qIndex = 0;
+                    loadSingleQuestion();
+                } else if (currentPart === 'TF') {
+                    currentPart = 'SA';
+                    loadSA();
+                }
+            }
+        }
+
+        function loadSA() {
+            switchView('view-sa');
+            const container = document.getElementById('sa-container');
+            container.innerHTML = '';
+            
+            questionsSA.forEach((item, i) => {
+                let div = document.createElement('div');
+                div.className = 'sa-box';
+                div.innerHTML = `
+                    <div class="sa-q-text">${i+16}. ${item.q}</div>
+                    <input type="text" class="sa-input" id="sa-input-${i}" placeholder="Ketik jawaban..." autocomplete="off">
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function submitSA() {
+            for(let i=0; i<questionsSA.length; i++) {
+                let inputVal = document.getElementById(`sa-input-${i}`).value.toLowerCase().trim();
+                let keys = questionsSA[i].keys;
+                
+                let isCorrect = keys.some(key => inputVal.includes(key));
+                if (isCorrect) {
+                    totalScore += 5;
+                }
+            }
+            showResult();
+        }
+
+        function showResult() {
+            switchView('view-result');
+            
+            const circle = document.getElementById('res-score');
+            const rank = document.getElementById('res-rank');
+            const motif = document.getElementById('res-motif');
+
+            let currentDisplay = 0;
+            let interval = setInterval(() => {
+                currentDisplay += 2;
+                if(currentDisplay >= totalScore) {
+                    currentDisplay = totalScore;
+                    clearInterval(interval);
+                    
+                    if (totalScore >= 80) {
+                        circle.style.borderColor = "#4CAF50";
+                        circle.style.color = "#4CAF50";
+                        if(totalScore === 100) {
+                            rank.innerText = "Sempurna! 🌟";
+                            motif.innerText = "Luar biasa! Kamu telah menguasai seluruh materi wujud zat dan model partikel tanpa cela.";
+                        } else {
+                            rank.innerText = "Sangat Memuaskan! 🎉";
+                            motif.innerText = "Kerja bagus! Kamu berhasil melampaui batas Ketuntasan Minimal. Pemahamanmu tentang wujud zat sudah sangat mantap.";
+                        }
+                    } else {
+                        circle.style.borderColor = "#F44336";
+                        circle.style.color = "#F44336";
+                        rank.innerText = "Perlu Ditingkatkan 💡";
+                        motif.innerText = "Jangan menyerah! Nilaimu masih di bawah Ketuntasan Minimal (80). Mari baca ulang materinya perlahan dan coba ulangi evaluasi ini.";
+                    }
+                }
+                circle.innerText = currentDisplay;
+            }, 20);
+        }
+
+    </script>
+</body>
+</html>

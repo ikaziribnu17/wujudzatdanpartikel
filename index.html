@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Simulasi Wujud Zat - Auto Scale</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* =========================================
+           1. PENGATURAN LAYAR & AUTO SCALE
+           ========================================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html {
+            width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            background-color: #2b2b2b;
+            font-family: 'Nunito', sans-serif;
+            overflow: hidden; /* Mencegah munculnya scrollbar */
+        }
+
+        /* Kontainer Utama - Ukuran asli tetap 1280x720 */
+        #app-container {
+            width: 1280px; height: 720px;
+            background-color: #F0F8FF;
+            position: relative;
+            overflow: hidden;
+            display: flex; flex-direction: column;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            transform-origin: center center; /* Titik pusat penskalaan */
+        }
+
+        /* Dekorasi Latar Belakang */
+        .bg-blob {
+            position: absolute; top: -50px; left: -50px;
+            width: 500px; height: 500px;
+            background: #B3E5FC;
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            z-index: 0; opacity: 0.6;
+        }
+        .desk {
+            position: absolute; bottom: 0; left: 0;
+            width: 100%; height: 50px;
+            background: linear-gradient(to bottom, #4A5568, #2D3748);
+            border-top: 6px solid #2d3748;
+            z-index: 0;
+        }
+
+        /* =========================================
+           2. HEADER
+           ========================================= */
+        header {
+            position: relative; z-index: 10;
+            text-align: center; margin-top: 25px; margin-bottom: 20px;
+        }
+        h1 {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 3.5rem;
+            color: #00BFFF; 
+            text-shadow: 
+                -3px -3px 0 #FFF, 3px -3px 0 #FFF, 
+                -3px 3px 0 #FFF, 3px 3px 0 #FFF,
+                0px 5px 10px rgba(0,0,0,0.1);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        /* =========================================
+           3. LAYOUT UTAMA (KONTEN)
+           ========================================= */
+        .main-content {
+            position: relative; z-index: 10;
+            display: flex; justify-content: center; gap: 40px;
+            padding: 0 50px; flex: 1;
+        }
+
+        /* BAGIAN KIRI: KANVAS SIMULASI */
+        .canvas-container {
+            width: 620px; height: 490px;
+            background: #ffffff;
+            border: 8px solid #00BFFF;
+            border-radius: 30px;
+            box-shadow: 0 15px 30px rgba(0,191,255,0.2), inset 0 0 15px rgba(0,0,0,0.05);
+            position: relative; overflow: hidden;
+        }
+        canvas { width: 100%; height: 100%; display: block; }
+        
+        .canvas-label {
+            position: absolute; top: 15px; left: 20px;
+            background: #FF66B2; color: white;
+            padding: 6px 18px; border-radius: 20px;
+            font-size: 1.2rem; font-weight: 900;
+            box-shadow: 0 3px 0 #d84594;
+        }
+
+        /* BAGIAN KANAN: KONTROL */
+        .controls {
+            width: 500px; height: 490px;
+            display: flex; flex-direction: column; 
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .glossy-card {
+            background: #FFF;
+            border-radius: 20px;
+            padding: 15px 20px;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+            border: 3px solid #E2E8F0;
+            position: relative;
+        }
+
+        /* Petunjuk & Pilihan Zat */
+        .instruction-wrapper { display: flex; flex-direction: column; gap: 8px; }
+        .instruction-text {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.2rem; color: #4A5568;
+            margin-left: 5px;
+        }
+        .zat-selector { display: flex; gap: 15px; }
+        .zat-btn {
+            flex: 1; padding: 10px; font-family: 'Fredoka', sans-serif; font-size: 1.4rem;
+            color: white; border: none; border-radius: 15px;
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: transform 0.2s; box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+        }
+        .zat-btn:active { transform: translateY(6px); box-shadow: 0 0px 0 rgba(0,0,0,0); }
+        .zat-btn::after { 
+            content: ''; position: absolute; top: 6px; left: 8px;
+            width: 40%; height: 30%; background: rgba(255,255,255,0.4);
+            border-radius: 15px; transform: rotate(-5deg);
+        }
+        
+        #btn-air { background-color: #00BFFF; } 
+        #btn-alkohol { background-color: #9D84F7; } 
+        
+        .zat-btn:not(.active) { opacity: 0.5; filter: grayscale(50%); box-shadow: 0 3px 0 rgba(0,0,0,0.1); transform: translateY(3px); }
+
+        /* Display Suhu & Status */
+        .status-display { display: flex; justify-content: space-between; align-items: center; background: #FFF9C4; border-color: #FDE047; }
+        .temp-val { font-size: 3rem; font-family: 'Fredoka', sans-serif; color: #FF7F50; line-height: 1; }
+        .state-val { 
+            background: #4CAF50; color: white; padding: 8px 20px; 
+            border-radius: 20px; font-size: 1.6rem; font-family: 'Fredoka', sans-serif;
+            box-shadow: 0 4px 0 #388E3C;
+        }
+
+        /* Slider Suhu */
+        .slider-wrapper { display: flex; flex-direction: column; gap: 5px; }
+        .slider-wrapper label { font-size: 1.2rem; color: #4A5568; font-weight: 900; }
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; margin: 10px 0; }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 20px; cursor: pointer;
+            background: linear-gradient(90deg, #9D84F7 0%, #00BFFF 50%, #FF66B2 100%);
+            border-radius: 10px; border: 3px solid #FFF; box-shadow: 0 3px 8px rgba(0,0,0,0.1);
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 36px; width: 36px; border-radius: 50%;
+            background: #FFF; cursor: pointer; -webkit-appearance: none;
+            margin-top: -10px; border: 6px solid #00BFFF;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:active { transform: scale(1.1); }
+        .slider-labels { display: flex; justify-content: space-between; font-size: 1rem; color: #A0AEC0; font-weight: 800; }
+
+        /* Kotak Info */
+        .info-text { font-size: 1.15rem; color: #4A5568; line-height: 1.4; font-weight: 700; min-height: 50px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        <div class="bg-blob"></div>
+        <div class="desk"></div>
+
+        <header>
+            <h1>SIMULASI</h1>
+        </header>
+
+        <div class="main-content">
+            
+            <div class="canvas-container">
+                <div class="canvas-label" id="canvasLabel">Model Partikel</div>
+                <canvas id="particleCanvas"></canvas>
+            </div>
+
+            <div class="controls">
+                
+                <div class="instruction-wrapper">
+                    <div class="instruction-text">💡 Petunjuk: Pilih zat untuk memulai simulasi.</div>
+                    <div class="zat-selector">
+                        <button class="zat-btn active" id="btn-air" onclick="setZat('air')">Air</button>
+                        <button class="zat-btn" id="btn-alkohol" onclick="setZat('alkohol')">Alkohol</button>
+                    </div>
+                </div>
+
+                <div class="glossy-card status-display">
+                    <div>
+                        <div style="font-size: 1rem; color: #718096; font-weight: 900; text-transform: uppercase;">Suhu Saat Ini</div>
+                        <div class="temp-val"><span id="tempDisplay">25</span>°C</div>
+                    </div>
+                    <div class="state-val" id="stateDisplay">CAIR</div>
+                </div>
+
+                <div class="glossy-card slider-wrapper">
+                    <label>Geser Pengatur Suhu:</label>
+                    <input type="range" id="tempSlider" min="-150" max="150" value="25">
+                    <div class="slider-labels">
+                        <span>-150°C</span>
+                        <span>0°C</span>
+                        <span>150°C</span>
+                    </div>
+                </div>
+
+                <div class="glossy-card">
+                    <div class="info-text" id="infoDisplay">
+                        Air pada suhu 25°C berwujud cair. Partikel berdekatan namun dapat bergeser bebas mengikuti wadah.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==========================================
+        // FUNGSI RESPONSIVE AUTO-SCALE
+        // ==========================================
+        function scaleApp() {
+            const container = document.getElementById('app-container');
+            const targetWidth = 1280;
+            const targetHeight = 720;
+            
+            // Hitung rasio layar saat ini dibandingkan ukuran target
+            const scaleX = window.innerWidth / targetWidth;
+            const scaleY = window.innerHeight / targetHeight;
+            
+            // Ambil nilai terkecil agar seluruh elemen muat di dalam layar tanpa terpotong
+            const scale = Math.min(scaleX, scaleY);
+            
+            // Terapkan efek scale (perkecilan/pembesaran) pada CSS
+            container.style.transform = `scale(${scale})`;
+        }
+
+        // Panggil saat layar pertama kali dibuka dan setiap kali ukuran browser diubah
+        window.addEventListener('resize', scaleApp);
+        scaleApp();
+        // ==========================================
+
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        const tempSlider = document.getElementById('tempSlider');
+        const tempDisplay = document.getElementById('tempDisplay');
+        const stateDisplay = document.getElementById('stateDisplay');
+        const infoDisplay = document.getElementById('infoDisplay');
+        const btnAir = document.getElementById('btn-air');
+        const btnAlkohol = document.getElementById('btn-alkohol');
+
+        const dataZat = {
+            air: { nama: "Air", beku: 0, didih: 100, warna: "#00BFFF", warnaGas: "#80D8FF" },
+            alkohol: { nama: "Alkohol", beku: -114, didih: 78, warna: "#9D84F7", warnaGas: "#D1C4E9" }
+        };
+
+        let currentZat = 'air';
+        let currentTemp = 25;
+        let currentState = 'CAIR'; 
+        
+        let particles = [];
+        const numParticles = 100;
+
+        function resizeCanvas() {
+            // Karena ukuran kotak tidak berubah (hanya di-scale), ukuran kanvas internal tetap tajam
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            createGridTargets();
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        function setZat(zat) {
+            currentZat = zat;
+            btnAir.classList.toggle('active', zat === 'air');
+            btnAlkohol.classList.toggle('active', zat === 'alkohol');
+            updateSimulasi();
+        }
+
+        class Particle {
+            constructor(index) {
+                this.r = 11; 
+                this.x = Math.random() * (canvas.width - this.r*2) + this.r;
+                this.y = Math.random() * (canvas.height - this.r*2) + this.r;
+                this.vx = (Math.random() - 0.5) * 6;
+                this.vy = (Math.random() - 0.5) * 6;
+                this.index = index;
+                this.targetX = 0;
+                this.targetY = 0;
+            }
+
+            update() {
+                if (currentState === 'PADAT') {
+                    let dx = this.targetX - this.x;
+                    let dy = this.targetY - this.y;
+                    this.x += dx * 0.15;
+                    this.y += dy * 0.15;
+                    this.x += (Math.random() - 0.5) * 1.5;
+                    this.y += (Math.random() - 0.5) * 1.5;
+                } 
+                else if (currentState === 'CAIR') {
+                    this.vy += 0.6; 
+                    this.vx += (Math.random() - 0.5) * 1.2; 
+                    
+                    if (this.vx > 3) this.vx = 3;
+                    if (this.vx < -3) this.vx = -3;
+
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < this.r) { this.x = this.r; this.vx *= -0.5; }
+                    if (this.x > canvas.width - this.r) { this.x = canvas.width - this.r; this.vx *= -0.5; }
+                    if (this.y > canvas.height - this.r) { this.y = canvas.height - this.r; this.vy *= -0.4; } 
+                } 
+                else if (currentState === 'GAS') {
+                    let speedMult = 1 + (currentTemp - dataZat[currentZat].didih) * 0.015;
+                    if(speedMult > 5) speedMult = 5;
+                    
+                    if (Math.abs(this.vx) < 2) this.vx = (Math.random() > 0.5 ? 4 : -4);
+                    if (Math.abs(this.vy) < 2) this.vy = (Math.random() > 0.5 ? 4 : -4);
+
+                    this.x += this.vx * speedMult;
+                    this.y += this.vy * speedMult;
+
+                    if (this.x < this.r || this.x > canvas.width - this.r) this.vx *= -1;
+                    if (this.y < this.r || this.y > canvas.height - this.r) this.vy *= -1;
+                    
+                    this.x = Math.max(this.r, Math.min(canvas.width - this.r, this.x));
+                    this.y = Math.max(this.r, Math.min(canvas.height - this.r, this.y));
+                }
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+                
+                if(currentState === 'GAS') {
+                    ctx.fillStyle = dataZat[currentZat].warnaGas;
+                } else {
+                    ctx.fillStyle = dataZat[currentZat].warna;
+                }
+                
+                ctx.fill();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = "#FFFFFF"; 
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.arc(this.x - this.r*0.3, this.y - this.r*0.3, this.r*0.3, 0, Math.PI * 2);
+                ctx.fillStyle = "rgba(255,255,255,0.5)";
+                ctx.fill();
+            }
+        }
+
+        function createGridTargets() {
+            let cols = 10;
+            let rows = 10;
+            let spacing = 24; 
+            let startX = (canvas.width - (cols * spacing)) / 2 + 12; 
+            let startY = canvas.height - (rows * spacing) - 15;
+
+            particles.forEach((p, i) => {
+                let col = i % cols;
+                let row = Math.floor(i / cols);
+                p.targetX = startX + col * spacing;
+                p.targetY = startY + row * spacing;
+            });
+        }
+
+        function initParticles() {
+            particles = [];
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle(i));
+            }
+            createGridTargets();
+        }
+
+        function updateSimulasi() {
+            currentTemp = parseInt(tempSlider.value);
+            tempDisplay.innerText = currentTemp;
+            
+            let zatInfo = dataZat[currentZat];
+
+            if (currentTemp <= zatInfo.beku) {
+                currentState = 'PADAT';
+                stateDisplay.innerText = 'PADAT';
+                stateDisplay.style.background = '#00BFFF'; 
+                stateDisplay.style.boxShadow = '0 4px 0 #008CBA';
+                infoDisplay.innerHTML = `Suhu <b style="color:#00BFFF">${currentTemp}°C</b> berada di bawah titik beku ${zatInfo.nama} (${zatInfo.beku}°C). Partikel tersusun rapat, teratur, dan hanya bergetar.`;
+            } else if (currentTemp >= zatInfo.didih) {
+                if (currentState !== 'GAS') {
+                    particles.forEach(p => {
+                        p.vx = (Math.random() - 0.5) * 15;
+                        p.vy = (Math.random() - 0.5) * 15;
+                    });
+                }
+                currentState = 'GAS';
+                stateDisplay.innerText = 'GAS';
+                stateDisplay.style.background = '#FF66B2'; 
+                stateDisplay.style.boxShadow = '0 4px 0 #D84594';
+                infoDisplay.innerHTML = `Suhu <b style="color:#FF66B2">${currentTemp}°C</b> mencapai titik didih ${zatInfo.nama} (${zatInfo.didih}°C). Partikel saling menjauh, mengisi seluruh wadah.`;
+            } else {
+                currentState = 'CAIR';
+                stateDisplay.innerText = 'CAIR';
+                stateDisplay.style.background = '#4CAF50'; 
+                stateDisplay.style.boxShadow = '0 4px 0 #388E3C';
+                particles.forEach(p => { if(Math.abs(p.vx) > 4) p.vx *= 0.5; });
+                infoDisplay.innerHTML = `Suhu <b style="color:#4CAF50">${currentTemp}°C</b> berada di antara titik beku dan didih ${zatInfo.nama}. Partikel berada di dasar wadah dan mengalir bebas.`;
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animate);
+        }
+
+        tempSlider.addEventListener('input', updateSimulasi);
+
+        setTimeout(() => {
+            resizeCanvas();
+            initParticles();
+            setZat('air');
+            animate();
+        }, 100);
+
+    </script>
+</body>
+</html>
