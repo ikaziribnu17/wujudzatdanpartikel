@@ -2,556 +2,530 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Petualangan ATOMY - Simulasi 1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kuis Wujud Zat & Model Partikel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet">
     <style>
-        /* --- 1. FONTS & RESET --- */
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-        
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Poppins', sans-serif;
-            user-select: none;
-        }
-
-        /* --- 2. THEME & NO-SCROLL LAYOUT --- */
-        body {
-            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
-            color: #ffffff;
-            width: 100vw;
-            height: 100vh;
+        /* =========================================
+           1. PENGATURAN LAYAR & AUTO SCALE
+           ========================================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html {
+            width: 100vw; height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            background-color: #2b2b2b;
+            font-family: 'Nunito', sans-serif;
             overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
-        .app-container {
-            width: 96vw;
-            max-width: 1400px;
-            height: 96vh;
-            background: rgba(30, 41, 59, 0.7);
-            border: 0.2vh solid rgba(14, 165, 233, 0.3);
-            border-radius: 2vh;
-            box-shadow: 0 1vh 3vh rgba(0,0,0,0.5);
-            backdrop-filter: blur(10px);
-            padding: 2vh 2vw;
-            display: flex;
-            flex-direction: column;
-            position: relative;
+        #app-container {
+            width: 1280px; height: 720px;
+            background-color: #E6F4FE;
+            position: relative; overflow: hidden;
+            display: flex; flex-direction: column; 
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            transform-origin: center center;
         }
 
-        /* --- 3. NAVIGATION & HEADER --- */
-        .top-nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 0.2vh solid rgba(255,255,255,0.1);
-            padding-bottom: 1vh;
-            flex-shrink: 0;
+        .bg-blob {
+            position: absolute; top: -100px; left: -100px;
+            width: 800px; height: 800px; background: #B3E5FC;
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            z-index: 0; opacity: 0.5;
+        }
+        
+        .desk {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
+            background: #E2E8F0; border-top: 6px solid #CBD5E1;
+            z-index: 0; display: flex; align-items: center; justify-content: space-around;
+        }
+        .drawer { width: 150px; height: 10px; background: #94A3B8; border-radius: 5px; opacity: 0.5;}
+
+        /* =========================================
+           2. TOMBOL NAVIGASI UMUM & HEADER
+           ========================================= */
+        .btn-nav {
+            position: absolute; z-index: 50; background: #FFFFFF;
+            color: #F59E0B; font-family: 'Fredoka', sans-serif;
+            font-size: 1.1rem; text-decoration: none;
+            padding: 8px 20px; border-radius: 30px; border: 4px solid #F59E0B;
+            box-shadow: 0 4px 0 #F59E0B; display: flex; align-items: center; gap: 8px;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .btn-nav:active { transform: translateY(4px); box-shadow: 0 0px 0 #F59E0B; }
+        .btn-next { bottom: 75px; right: 40px; }
+
+        header {
+            position: relative; z-index: 10;
+            text-align: center; margin-top: 10px; 
         }
 
-        .kuis-tabs {
-            display: flex;
-            gap: 1vw;
+        h1.main-title {
+            font-family: 'Fredoka', sans-serif; font-size: 2.6rem; color: #00BFFF;
+            text-shadow: -2px -2px 0 #FFF, 2px -2px 0 #FFF, -2px 2px 0 #FFF, 2px 2px 0 #FFF, 0px 5px 0px rgba(0,0,0,0.1);
+            letter-spacing: 2px; margin-bottom: 8px; text-transform: uppercase;
         }
 
-        .tab-btn {
-            background: rgba(255, 255, 255, 0.1);
-            color: rgba(255, 255, 255, 0.7);
-            border: none;
-            padding: 1vh 1.5vw;
-            border-radius: 3vh;
-            font-weight: 600;
-            font-size: 2.2vh;
-            text-decoration: none;
-            transition: all 0.2s ease;
+        .quiz-nav-bar {
+            display: flex; justify-content: center; gap: 15px; margin-bottom: 5px;
+        }
+        .btn-quiz {
+            background-color: #00BFFF; color: #FFFFFF;
+            font-family: 'Fredoka', sans-serif; font-size: 1.1rem;
+            padding: 10px 25px; border-radius: 30px; border: 3px solid #B45309; 
+            box-shadow: 0 5px 0 #B45309; text-align: center; cursor: pointer; transition: 0.1s;
+        }
+        .btn-quiz:active, .btn-quiz.active {
+            background-color: #0284C7; transform: translateY(5px); box-shadow: 0 0px 0 #B45309;
+            border-color: #92400E;
         }
 
-        .tab-btn.active {
-            background: #0ea5e9;
-            color: #ffffff;
-            box-shadow: 0 0 1.5vh rgba(14, 165, 233, 0.5);
+        /* =========================================
+           3. AREA KUIS LEBAR (TENGAH LAYAR)
+           ========================================= */
+        .main-content {
+            position: relative; z-index: 10; flex: 1;
+            display: flex; justify-content: center; align-items: stretch;
+            padding: 5px 40px 75px 40px; 
         }
 
-        .header-title {
-            text-align: center;
-            margin: 1vh 0;
-            flex-shrink: 0;
-            position: relative;
+        .quiz-view {
+            display: none; width: 100%; max-width: 1100px; height: 100%; 
+            background: #FFFFFF; border-radius: 20px; padding: 15px 25px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); flex-direction: column;
+            border: 4px solid #E2E8F0; overflow: hidden; 
         }
+        .quiz-view.active { display: flex; animation: fadeIn 0.4s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .header-title h1 {
-            font-size: 3.8vh;
-            color: #38bdf8;
+        .quiz-title { font-size: 1.2rem; color: #1E293B; font-weight: 800; text-align: center; margin-bottom: 15px; flex-shrink: 0;}
+        
+        .btn-periksa {
+            background: #4CAF50; color: white; padding: 10px 35px; border: none; border-radius: 20px;
+            font-family: 'Fredoka', sans-serif; font-size: 1.2rem; cursor: pointer;
+            box-shadow: 0 5px 0 #388E3C; align-self: center; margin-top: auto; transition: 0.1s;
+            flex-shrink: 0; 
         }
+        .btn-periksa:active { transform: translateY(5px); box-shadow: none; }
 
-        .header-title p {
-            font-size: 2vh;
-            color: #cbd5e1;
+        /* =========================================
+           4. CSS KUIS 1 (DRAG & DROP CIRI ZAT)
+           ========================================= */
+        .q1-container { display: flex; gap: 15px; margin-bottom: 10px; flex: 1; min-height: 0;}
+        .q1-dropzone {
+            flex: 1; background: #F8FAFC; border: 3px dashed #94A3B8; border-radius: 12px;
+            padding: 8px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto;
         }
-
-        /* --- 4. TATA LETAK KIRI-KANAN --- */
-        .workspace {
-            display: flex;
-            flex-direction: row;
-            flex: 1;
-            gap: 2vw;
-            min-height: 0;
-            margin-top: 2vh;
-            margin-bottom: 1vh;
+        .q1-dropzone.zone-padat { border-color: #00BFFF; background: #E0F2FE; }
+        .q1-dropzone.zone-cair { border-color: #4CAF50; background: #E8F5E9; }
+        .q1-dropzone.zone-gas { border-color: #FF66B2; background: #FCE7F3; }
+        .q1-zone-title { font-family: 'Fredoka', sans-serif; font-size: 1.2rem; text-align: center; margin-bottom: 5px; flex-shrink: 0;}
+        
+        .q1-source {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+            background: #FFFBEB; padding: 10px; border-radius: 12px; border: 3px dashed #FDE047; 
+            margin-bottom: 15px; flex-shrink: 0;
         }
-
-        /* PANEL KIRI */
-        .left-panel {
-            width: 35%;
-            display: flex;
-            flex-direction: column;
-            background: rgba(255, 255, 255, 0.02);
-            border: 0.2vh solid rgba(255,255,255,0.05);
-            border-radius: 2vh;
-            padding: 2vh;
-            gap: 2vh;
-        }
-
-        .panel-title {
-            font-size: 2.2vh;
-            color: #94a3b8;
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 0.1vw;
-            border-bottom: 0.1vh solid rgba(255,255,255,0.1);
-            padding-bottom: 1vh;
-        }
-
-        .atom-pool {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 2vh 2vw;
-            flex: 1;
-            align-content: flex-start;
-        }
-
-        .controls {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5vh;
-            margin-top: auto;
-        }
-
-        .btn {
-            width: 100%;
-            justify-content: center;
-            padding: 2vh;
-            font-size: 2.2vh;
-            font-weight: 700;
-            border: none;
-            border-radius: 1vh;
-            cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 0.5vh 1vh rgba(0,0,0,0.3);
-            display: flex;
-            align-items: center;
-            gap: 1vw;
-        }
-
-        .btn-periksa { background: #10b981; color: white; font-size: 2.4vh; }
-        .btn-periksa:hover { background: #059669; transform: translateY(-0.2vh); }
-        .btn-reset { background: #64748b; color: white; }
-        .btn-reset:hover { background: #475569; transform: translateY(-0.2vh); }
-
-        /* PANEL KANAN */
-        .right-panel {
-            width: 65%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .reaction-box {
-            flex: 1;
-            background: radial-gradient(circle, rgba(14, 165, 233, 0.08) 0%, rgba(15, 23, 42, 0.85) 100%);
-            border: 0.3vh dashed #0ea5e9;
-            border-radius: 2vh;
-            display: flex;
-            flex-wrap: wrap;
-            align-content: center;
-            justify-content: center;
-            gap: 1vw;
-            padding: 2vh;
-            position: relative;
-            overflow-y: auto;
-        }
-
-        .reaction-box::before {
-            content: "Seret atom ke sini untuk bereaksi";
-            position: absolute;
-            color: rgba(255,255,255,0.15);
-            font-size: 2.8vh;
-            font-weight: 700;
-            pointer-events: none;
-        }
-
-        .reaction-box.drag-over {
-            background: radial-gradient(circle, rgba(34, 197, 94, 0.15) 0%, rgba(15, 23, 42, 0.85) 100%);
-            border-color: #22c55e;
-        }
-
-        /* Visual Atom */
-        .atom {
-            width: 7vh;
-            height: 7vh;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3vh;
-            font-weight: 700;
-            box-shadow: inset -0.5vh -0.5vh 1vh rgba(0,0,0,0.4), 0 0.5vh 1vh rgba(0,0,0,0.3);
-            cursor: grab;
-            position: relative;
-            transition: transform 0.1s;
-            touch-action: none; 
+        .q1-item {
+            background: #FFF; padding: 6px; border-radius: 8px;
+            font-size: 0.85rem; font-weight: 800; border: 2px solid #F59E0B; color: #78350F;
+            cursor: grab; text-align: center; box-shadow: 0 3px 0 #F59E0B;
+            line-height: 1.2; width: 100%;
+            /* Perbaikan stabilitas sentuhan */
+            touch-action: none;
             user-select: none;
         }
+        .q1-item:active { cursor: grabbing; }
 
-        .atom:active { cursor: grabbing; transform: scale(0.9); }
-        
-        .atom-h { background: linear-gradient(135deg, #f8fafc, #cbd5e1); color: #0f172a; }
-        .atom-o { background: linear-gradient(135deg, #fca5a5, #ef4444); color: white; }
-        .atom-c { background: linear-gradient(135deg, #64748b, #334155); color: white; }
-        .atom-na { background: linear-gradient(135deg, #c084fc, #9333ea); color: white; }
-        .atom-cl { background: linear-gradient(135deg, #86efac, #22c55e); color: #064e3b; }
-
-        .reaction-box .atom {
-            cursor: pointer;
-            animation: popIn 0.3s ease-out;
-        }
-        .reaction-box .atom:hover::after {
-            content: "×";
-            position: absolute;
-            top: -0.5vh; right: -0.5vh;
-            background: #ef4444; color: white;
-            font-size: 1.6vh; width: 2.5vh; height: 2.5vh;
-            border-radius: 50%; display: flex;
-            justify-content: center; align-items: center;
-            font-weight: 700;
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0); }
-            80% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+        /* =========================================
+           5. CSS KUIS 2 (MENGURUTKAN)
+           ========================================= */
+        .q2-source-bank { display: flex; justify-content: center; gap: 20px; margin-bottom: 15px; flex-shrink: 0;}
+        .q2-source-item {
+            background: #FDE047; padding: 8px 30px; border-radius: 12px; font-family: 'Fredoka', sans-serif;
+            font-size: 1.2rem; color: #B45309; border: 3px solid #B45309; box-shadow: 0 4px 0 #B45309; cursor: grab;
+            /* Perbaikan stabilitas sentuhan */
+            touch-action: none;
+            user-select: none;
         }
         
-        .btn-petunjuk { 
-            background: #f59e0b; 
-            color: white; 
-            position: absolute;
-            right: 0; top: 50%;
-            transform: translateY(-50%);
-            padding: 1vh 1.5vw;
-            font-size: 1.8vh;
-            border: none;
-            border-radius: 1vh;
-            cursor: pointer;
-            font-weight: 700;
-        }
-        .btn-petunjuk:hover { background: #d97706; }
-
-        /* --- 5. MODAL SYSTEM --- */
-        .modal-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.85);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            border-radius: 2vh;
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-box {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-            border: 0.2vh solid #38bdf8;
-            padding: 3vh 4vw;
-            border-radius: 2vh;
-            text-align: center;
-            max-width: 70%;
-            box-shadow: 0 2vh 4vh rgba(0,0,0,0.8);
-            animation: slideDown 0.3s ease-out;
-        }
-
-        .blueprint-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5vh;
-            margin: 2vh 0;
-            text-align: left;
-        }
-
-        .blueprint-item {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 1.2vh 2vw;
-            border-radius: 1vh;
-            border-left: 0.5vh solid #f59e0b;
-            font-size: 2vh;
-        }
-        .blueprint-item b { color: #38bdf8; font-size: 2.2vh; }
-
-        @keyframes slideDown {
-            from { transform: translateY(-3vh); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        .modal-type { font-size: 2vh; font-weight: 700; padding: 0.5vh 1.5vw; border-radius: 3vh; display: inline-block; margin-bottom: 1.5vh; }
-        .type-unsur { background: #059669; color: white; }
-        .type-senyawa { background: #2563eb; color: white; }
-        .type-error { background: #dc2626; color: white; }
-
-        .modal-title { font-size: 3.8vh; color: #fcd34d; margin-bottom: 1vh; }
-        .modal-desc { font-size: 2.1vh; color: #cbd5e1; margin-bottom: 2.5vh; line-height: 1.6; }
+        .q2-list { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; align-content: start;}
         
-        .btn-tutup {
-            background: #38bdf8; color: #0f172a;
-            padding: 1vh 3vw; font-size: 2vh; font-weight: 700;
-            border: none; border-radius: 1vh; cursor: pointer; transition: 0.2s;
+        .q2-row {
+            display: flex; flex-direction: column; gap: 6px;
+            background: #F8FAFC; padding: 10px 15px; border-radius: 12px; border: 2px solid #E2E8F0;
         }
-        .btn-tutup:hover { background: #0ea5e9; }
+        .q2-text { font-size: 1rem; color: #334155; font-weight: 700; line-height: 1.2;}
+        .q2-drop-area { display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .q2-slot {
+            width: 110px; height: 32px; border: 3px dashed #94A3B8; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Fredoka', sans-serif; font-size: 1rem; color: #1E293B; background: #FFF;
+        }
+        .q2-slot.filled { border-style: solid; border-color: #00BFFF; background: #E0F2FE; color: #0284C7; }
 
-        .bottom-nav {
-            border-top: 0.1vh solid rgba(255,255,255,0.1);
-            padding-top: 1vh;
-            flex-shrink: 0;
+        /* =========================================
+           6. CSS KUIS 3 (MENJODOHKAN DROPDOWN)
+           ========================================= */
+        .q3-list {
+            display: flex; flex-direction: column; gap: 12px; width: 100%;
+            padding: 5px 30px; flex: 1; justify-content: center;
         }
-        .btn-beranda { color: #94a3b8; text-decoration: none; font-size: 2vh; }
-        .btn-beranda:hover { color: white; }
+        .q3-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #F8FAFC; border: 3px solid #CBD5E1; padding: 12px 25px;
+            border-radius: 15px; transition: 0.2s;
+        }
+        .q3-row:hover { background: #F1F5F9; border-color: #00BFFF; }
+        .q3-desc { font-size: 1.15rem; color: #334155; font-weight: 800; flex: 1;}
+        
+        .q3-select {
+            font-family: 'Fredoka', sans-serif; font-size: 1.1rem;
+            padding: 10px 15px; border-radius: 10px; border: 3px solid #00BFFF;
+            outline: none; cursor: pointer; background: #FFF; color: #0284C7;
+            box-shadow: 0 4px 0 #008CBA; transition: 0.1s; width: 220px; text-align: center;
+        }
+        .q3-select:focus, .q3-select:active {
+            border-color: #F59E0B; box-shadow: 0 4px 0 #D97706; transform: translateY(2px);
+        }
+        .q3-select option { font-family: 'Nunito', sans-serif; font-weight: 700; color: #1E293B; }
+
+        /* =========================================
+           7. POPUP MODAL
+           ========================================= */
+        .overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 100;
+        }
+        .modal {
+            background: #FFF; border-radius: 25px; padding: 30px; text-align: center;
+            border: 6px solid #FFF; width: 450px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        .modal.success { border-color: #4CAF50; }
+        .modal.error { border-color: #F44336; }
+        .modal-icon { font-size: 3.5rem; }
+        .modal-title { font-family: 'Fredoka', sans-serif; font-size: 2.2rem; color: #2D3748; }
+        .modal-desc { font-size: 1.1rem; color: #4A5568; line-height: 1.4; font-weight: 700; }
+
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <!-- Top Nav -->
-        <nav class="top-nav">
-            <div class="kuis-tabs">
-<a href="simulasi1.html" class="tab-btn active">⚛️ Simulasi 1:Reaksi Zat</a>
-<a href="simulasi2.html" class="tab-btn">🥤 Simulasi 2</a>
-<a href="simulasi3.html" class="tab-btn">🌈 Simulasi 3</a>
-<a href="simulasi4.html" class="tab-btn">☕ Simulasi 4</a>
-            </div>
-            <div style="font-size: 2vh; color: #94a3b8; font-weight: 600;">ATOMY LAB WORKSPACE</div>
-        </nav>
+    <div id="app-container">
+        <div class="bg-blob"></div>
+        <div class="desk">
+            <div class="drawer"></div><div class="drawer"></div><div class="drawer"></div><div class="drawer"></div>
+        </div>
 
-        <!-- Header -->
-        <header class="header-title">
-            <h1>Laboratorium Reaksi Zat</h1>
-            <p>Rangkai atom ke dalam kotak reaktor, lalu uji jenis zat kimia yang terbentuk!</p>
-            <button class="btn-petunjuk" onclick="bukaPetunjuk()">📖 Petunjuk Rumus</button>
+        <a href="evaluasi.html" class="btn-nav btn-next">LANJUTKAN KE EVALUASI ➔</a>
+
+        <header>
+            <h1 class="main-title">KUIS INTERAKTIF</h1>
+            <div class="quiz-nav-bar">
+                <button class="btn-quiz active" id="btn-q1" onclick="openQuiz('q1')">KUIS 1: CIRI ZAT</button>
+                <button class="btn-quiz" id="btn-q2" onclick="openQuiz('q2')">KUIS 2: MENGURUTKAN</button>
+                <button class="btn-quiz" id="btn-q3" onclick="openQuiz('q3')">KUIS 3: MENJODOHKAN</button>
+            </div>
         </header>
 
-        <!-- AREA KERJA KIRI KANAN -->
-        <div class="workspace">
+        <div class="main-content">
             
-            <!-- Panel Kiri: Bahan & Tombol Aksi -->
-            <div class="left-panel">
-                <h3 class="panel-title">Bahan Elemen</h3>
-                <div class="atom-pool">
-                    <!-- Penambahan fungsi event ondragstart sesuai referensi stabilitas -->
-                    <div class="atom atom-h" draggable="true" data-atom="H" data-color="atom-h" ondragstart="dragAtom(event)">H</div>
-                    <div class="atom atom-o" draggable="true" data-atom="O" data-color="atom-o" ondragstart="dragAtom(event)">O</div>
-                    <div class="atom atom-c" draggable="true" data-atom="C" data-color="atom-c" ondragstart="dragAtom(event)">C</div>
-                    <div class="atom atom-na" draggable="true" data-atom="Na" data-color="atom-na" ondragstart="dragAtom(event)">Na</div>
-                    <div class="atom atom-cl" draggable="true" data-atom="Cl" data-color="atom-cl" ondragstart="dragAtom(event)">Cl</div>
+            <!-- KUIS 1 -->
+            <div id="view-q1" class="quiz-view active">
+                <div class="quiz-title">Tarik kotak ciri-ciri di bawah ke dalam wadah wujud zat yang paling tepat!</div>
+                
+                <div class="q1-container">
+                    <div class="q1-dropzone zone-padat" ondrop="dropQ1(event)" ondragover="allowDrop(event)">
+                        <div class="q1-zone-title" style="color: #0284C7;">PADAT</div>
+                    </div>
+                    <div class="q1-dropzone zone-cair" ondrop="dropQ1(event)" ondragover="allowDrop(event)">
+                        <div class="q1-zone-title" style="color: #2F855A;">CAIR</div>
+                    </div>
+                    <div class="q1-dropzone zone-gas" ondrop="dropQ1(event)" ondragover="allowDrop(event)">
+                        <div class="q1-zone-title" style="color: #D53F8C;">GAS</div>
+                    </div>
                 </div>
-                <div class="controls">
-                    <button class="btn btn-periksa" onclick="periksaReaksi()">🧪 Periksa Hasil</button>
-                    <button class="btn btn-reset" onclick="bersihkanReaktor()">🧹 Bersihkan Reaktor</button>
+
+                <div class="q1-source" id="q1-source-box" ondrop="dropQ1(event)" ondragover="allowDrop(event)">
+                    <div class="q1-item" draggable="true" id="c1" data-ans="cair" ondragstart="dragQ1(event)">Bentuk berubah mengikuti wadahnya, tetapi volumenya tetap.</div>
+                    <div class="q1-item" draggable="true" id="p1" data-ans="padat" ondragstart="dragQ1(event)">Bentuk dan volumenya selalu tetap.</div>
+                    <div class="q1-item" draggable="true" id="g1" data-ans="gas" ondragstart="dragQ1(event)">Partikel bergerak sangat cepat dan bebas menabrak dinding wadah.</div>
+                    <div class="q1-item" draggable="true" id="c2" data-ans="cair" ondragstart="dragQ1(event)">Jarak antar partikel agak renggang.</div>
+                    <div class="q1-item" draggable="true" id="p2" data-ans="padat" ondragstart="dragQ1(event)">Partikel tidak bisa bergerak bebas, hanya bergetar di tempat.</div>
+                    <div class="q1-item" draggable="true" id="g2" data-ans="gas" ondragstart="dragQ1(event)">Bentuk dan volumenya selalu berubah memenuhi ruangan.</div>
+                    <div class="q1-item" draggable="true" id="p3" data-ans="padat" ondragstart="dragQ1(event)">Jarak antar partikel sangat rapat dan teratur.</div>
+                    <div class="q1-item" draggable="true" id="g3" data-ans="gas" ondragstart="dragQ1(event)">Jarak antar partikel sangat renggang dan acak.</div>
+                    <div class="q1-item" draggable="true" id="c3" data-ans="cair" ondragstart="dragQ1(event)">Partikel bisa bergerak bebas, namun terbatas (bisa mengalir).</div>
                 </div>
+                
+                <button class="btn-periksa" onclick="checkQ1()">PERIKSA JAWABAN</button>
             </div>
 
-            <!-- Panel Kanan: Reaktor Penuh -->
-            <div class="right-panel">
-                <!-- Penambahan event dropzone bawaan HTML -->
-                <div class="reaction-box" id="reaction-box" ondragover="allowDrop(event)" ondragleave="dragLeave(event)" ondrop="dropAtom(event)"></div>
-            </div>
-
-        </div>
-
-        <!-- MODAL PETUNJUK -->
-        <div class="modal-overlay" id="blueprint-modal">
-            <div class="modal-box" style="max-width: 60%;">
-                <h2 style="color: #f59e0b; font-size: 3vh;">📖 Buku Panduan Kode Rumus Zat</h2>
-                <p style="color: #cbd5e1; font-size: 1.8vh; margin-bottom: 1vh;">Berikut adalah target rumus molekul senyawa yang dapat kamu buat di laboratorium ini:</p>
-                <div class="blueprint-grid">
-                    <div class="blueprint-item">💧 Air: <b>H<sub>2</sub>O</b></div>
-                    <div class="blueprint-item">🧂 Garam Dapur: <b>NaCl</b></div>
-                    <div class="blueprint-item">💨 Karbon Dioksida: <b>CO<sub>2</sub></b></div>
-                    <div class="blueprint-item">🧼 Soda Api: <b>NaOH</b></div>
-                    <div class="blueprint-item">⚠️ Karbon Monoksida: <b>CO</b></div>
-                    <div class="blueprint-item">🧪 Hidrogen Peroksida: <b>H<sub>2</sub>O<sub>2</sub></b></div>
-                    <div class="blueprint-item">🧪 Asam Klorida: <b>HCl</b></div>
-                    <div class="blueprint-item">🍎 Glukosa: <b>C<sub>6</sub>H<sub>12</sub>O<sub>6</sub></b></div>
+            <!-- KUIS 2 -->
+            <div id="view-q2" class="quiz-view">
+                <div class="quiz-title">Tarik wujud zat di bawah ke dalam urutan yang tepat pada setiap peristiwa! (Bisa ditarik berulang)</div>
+                
+                <div class="q2-source-bank">
+                    <div class="q2-source-item" draggable="true" ondragstart="dragQ2(event)">PADAT</div>
+                    <div class="q2-source-item" draggable="true" ondragstart="dragQ2(event)">CAIR</div>
+                    <div class="q2-source-item" draggable="true" ondragstart="dragQ2(event)">GAS</div>
                 </div>
-                <button class="btn-tutup" onclick="tutupPetunjuk()">Tutup Panduan</button>
+
+                <div class="q2-list">
+                    <div class="q2-row">
+                        <div class="q2-text">1. Es batu yang dibiarkan di bawah sinar matahari.</div>
+                        <div class="q2-drop-area">
+                            <div class="q2-slot" id="q2-s1-1" ondrop="dropQ2(event)" ondragover="allowDrop(event)"></div> ➔ 
+                            <div class="q2-slot" id="q2-s1-2" ondrop="dropQ2(event)" ondragover="allowDrop(event)"></div>
+                        </div>
+                    </div>
+                    <div class="q2-row">
+                        <div class="q2-text">2. Air yang dipanaskan di panci hingga mendidih.</div>
+                        <div class="q2-drop-area">
+                            <div class="q2-slot" id="q2-s2-1" ondrop="dropQ2(event)" ondragover="allowDrop(event)"></div> ➔ 
+                            <div class="q2-slot" id="q2-s2-2" ondrop="dropQ2(event)" ondragover="allowDrop(event)"></div>
+                        </div>
+                    </div>
+                    <div class="q2-row">
+                        <div class="q2-text">3. Kapur barus di lemari pakaian lama-lama habis.</div>
+                        <div class="q2-drop-area">
+                            <div class="q2-slot" id="q2-s3-1" ondrop="dropQ2(event)" ondragover="allowDrop(event)"></div> ➔ 
+                            <div class="q2-slot" id="q2-s3-2" ondrop="dropQ2(event)" ondragover="allowDrop(event)"></div>
+                        </div>
+                    </div>
+                    <div class="q2-row">
+                        <div class="q2-text">4. Air sirup yang dimasukkan ke dalam freezer.</div>
+                        <div class="q2-drop-area">
+                            <div class="q2-slot" id="q2-s4-1" ondrop="dropQ2(event)" ondragover="allowDrop(event)"></div> ➔ 
+                            <div class="q2-slot" id="q2-s4-2" ondrop="dropQ2(event)" ondragover="allowDrop(event)"></div>
+                        </div>
+                    </div>
+                    <div class="q2-row" style="grid-column: span 2; width: 50%; justify-self: center;">
+                        <div class="q2-text" style="text-align: center;">5. Titik air muncul di daun pada pagi hari (embun).</div>
+                        <div class="q2-drop-area">
+                            <div class="q2-slot" id="q2-s5-1" ondrop="dropQ2(event)" ondragover="allowDrop(event)"></div> ➔ 
+                            <div class="q2-slot" id="q2-s5-2" ondrop="dropQ2(event)" ondragover="allowDrop(event)"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn-periksa" onclick="checkQ2()">PERIKSA JAWABAN</button>
+            </div>
+
+            <!-- KUIS 3 -->
+            <div id="view-q3" class="quiz-view">
+                <div class="quiz-title">Pilih nama proses perubahan wujud yang tepat untuk setiap deskripsi di bawah ini!</div>
+                
+                <div class="q3-list">
+                    <div class="q3-row">
+                        <div class="q3-desc">Perubahan wujud dari Padat menjadi Cair</div>
+                        <select class="q3-select" data-ans="mencair">
+                            <option value="" disabled selected>-- Pilih Jawaban --</option>
+                            <option value="membeku">Membeku</option>
+                            <option value="mencair">Mencair</option>
+                            <option value="mengembun">Mengembun</option>
+                            <option value="menguap">Menguap</option>
+                            <option value="menyublim">Menyublim</option>
+                        </select>
+                    </div>
+
+                    <div class="q3-row">
+                        <div class="q3-desc">Perubahan wujud dari Cair menjadi Gas</div>
+                        <select class="q3-select" data-ans="menguap">
+                            <option value="" disabled selected>-- Pilih Jawaban --</option>
+                            <option value="membeku">Membeku</option>
+                            <option value="mencair">Mencair</option>
+                            <option value="mengembun">Mengembun</option>
+                            <option value="menguap">Menguap</option>
+                            <option value="menyublim">Menyublim</option>
+                        </select>
+                    </div>
+
+                    <div class="q3-row">
+                        <div class="q3-desc">Perubahan wujud dari Gas menjadi Cair</div>
+                        <select class="q3-select" data-ans="mengembun">
+                            <option value="" disabled selected>-- Pilih Jawaban --</option>
+                            <option value="membeku">Membeku</option>
+                            <option value="mencair">Mencair</option>
+                            <option value="mengembun">Mengembun</option>
+                            <option value="menguap">Menguap</option>
+                            <option value="menyublim">Menyublim</option>
+                        </select>
+                    </div>
+
+                    <div class="q3-row">
+                        <div class="q3-desc">Perubahan wujud dari Cair menjadi Padat</div>
+                        <select class="q3-select" data-ans="membeku">
+                            <option value="" disabled selected>-- Pilih Jawaban --</option>
+                            <option value="membeku">Membeku</option>
+                            <option value="mencair">Mencair</option>
+                            <option value="mengembun">Mengembun</option>
+                            <option value="menguap">Menguap</option>
+                            <option value="menyublim">Menyublim</option>
+                        </select>
+                    </div>
+
+                    <div class="q3-row">
+                        <div class="q3-desc">Perubahan wujud dari Padat menjadi Gas</div>
+                        <select class="q3-select" data-ans="menyublim">
+                            <option value="" disabled selected>-- Pilih Jawaban --</option>
+                            <option value="membeku">Membeku</option>
+                            <option value="mencair">Mencair</option>
+                            <option value="mengembun">Mengembun</option>
+                            <option value="menguap">Menguap</option>
+                            <option value="menyublim">Menyublim</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button class="btn-periksa" onclick="checkQ3()">PERIKSA JAWABAN</button>
             </div>
         </div>
+    </div>
 
-        <!-- MODAL HASIL -->
-        <div class="modal-overlay" id="result-modal">
-            <div class="modal-box">
-                <div id="modal-badge" class="modal-type">Status</div>
-                <h2 class="modal-title" id="modal-title">Nama Zat</h2>
-                <p class="modal-desc" id="modal-desc">Deskripsi analisis.</p>
-                <button class="btn-tutup" onclick="tutupResult()">Kembali Mencoba</button>
-            </div>
-        </div>
-
-        <div class="bottom-nav">
-            <a href="index.html" class="btn-beranda">🏠 Kembali ke Beranda Utama</a>
+    <!-- MODAL -->
+    <div id="popup-modal" class="overlay">
+        <div class="modal" id="modal-box">
+            <div class="modal-icon" id="modal-icon">⭐</div>
+            <div class="modal-title" id="modal-title">Hebat!</div>
+            <div class="modal-desc" id="modal-desc">Pesan</div>
+            <button class="btn-periksa" style="background:#00BFFF; box-shadow: 0 5px 0 #008CBA; padding: 10px 40px; margin-top: 10px;" onclick="closePopup()">TUTUP</button>
         </div>
     </div>
 
     <script>
-        // --- DATA BUKU KIMIA ---
-        const dataUnsur = {
-            "H": { nama: "Hidrogen", noAtom: 1, massa: 1 },
-            "O": { nama: "Oksigen", noAtom: 8, massa: 16 },
-            "C": { nama: "Karbon", noAtom: 6, massa: 12 },
-            "Na": { nama: "Natrium", noAtom: 11, massa: 23 },
-            "Cl": { nama: "Klorin", noAtom: 17, massa: 35.5 }
-        };
-
-        const resultModal = document.getElementById('result-modal');
-        const blueprintModal = document.getElementById('blueprint-modal');
-
-        // --- SISTEM DRAG & DROP STABIL (Menggunakan dataTransfer) ---
-        function dragAtom(ev) {
-            ev.dataTransfer.setData('type', ev.target.getAttribute('data-atom'));
-            ev.dataTransfer.setData('colorClass', ev.target.getAttribute('data-color'));
+        // --- 1. Fungsi Auto-Scale Layar ---
+        function scaleApp() {
+            const container = document.getElementById('app-container');
+            const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+            container.style.transform = `scale(${scale})`;
         }
+        window.addEventListener('resize', scaleApp);
+        scaleApp();
 
-        function allowDrop(ev) {
-            ev.preventDefault();
-            document.getElementById('reaction-box').classList.add('drag-over');
-        }
-
-        function dragLeave(ev) {
-            document.getElementById('reaction-box').classList.remove('drag-over');
-        }
-
-        function dropAtom(ev) {
-            ev.preventDefault();
-            const reactionBox = document.getElementById('reaction-box');
-            reactionBox.classList.remove('drag-over');
+        // --- 2. Navigasi Antar Kuis ---
+        function openQuiz(id) {
+            document.querySelectorAll('.quiz-view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.btn-quiz').forEach(b => b.classList.remove('active'));
             
-            // Mengambil data dari atom yang sedang diseret
-            const type = ev.dataTransfer.getData('type');
-            const colorClass = ev.dataTransfer.getData('colorClass');
-            
-            if (type && colorClass) {
-                // Mencetak atom baru di dalam reaktor
-                const newAtom = document.createElement('div');
-                newAtom.classList.add('atom', colorClass);
-                newAtom.innerText = type;
-                newAtom.setAttribute('data-atom', type);
-                
-                // Menambahkan fungsi klik untuk menghapus atom
-                newAtom.addEventListener('click', function() { this.remove(); });
+            document.getElementById('view-' + id).classList.add('active');
+            document.getElementById('btn-' + id).classList.add('active');
+        }
 
-                reactionBox.appendChild(newAtom);
+        // --- 3. Fungsi Pop Up Universal ---
+        function showPopup(isCorrect, message) {
+            const modal = document.getElementById('popup-modal');
+            const box = document.getElementById('modal-box');
+            modal.style.display = 'flex';
+            if(isCorrect) {
+                box.className = 'modal success';
+                document.getElementById('modal-icon').innerText = '🎉';
+                document.getElementById('modal-title').innerText = 'Luar Biasa!';
+                document.getElementById('modal-title').style.color = '#4CAF50';
+            } else {
+                box.className = 'modal error';
+                document.getElementById('modal-icon').innerText = '😅';
+                document.getElementById('modal-title').innerText = 'Belum Tepat';
+                document.getElementById('modal-title').style.color = '#F44336';
+            }
+            document.getElementById('modal-desc').innerText = message;
+        }
+        function closePopup() { document.getElementById('popup-modal').style.display = 'none'; }
+
+        // --- 4. Logika Kuis 1 (Drag & Drop Ciri Zat) ---
+        function allowDrop(ev) { ev.preventDefault(); }
+        function dragQ1(ev) { ev.dataTransfer.setData('id', ev.target.id); }
+        function dropQ1(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData('id');
+            const item = document.getElementById(data);
+            if(ev.target.classList.contains('q1-dropzone') || ev.target.id === 'q1-source-box') {
+                ev.target.appendChild(item);
+            } else if (ev.target.closest('.q1-dropzone')) {
+                ev.target.closest('.q1-dropzone').appendChild(item);
             }
         }
-
-        // --- PENGENDALI ANTARMUKA ---
-        function bukaPetunjuk() { blueprintModal.style.display = 'flex'; }
-        function tutupPetunjuk() { blueprintModal.style.display = 'none'; }
-        function tutupResult() { resultModal.style.display = 'none'; }
-        function bersihkanReaktor() { document.getElementById('reaction-box').innerHTML = ''; }
-
-        // --- ALGORITMA KIMIA ---
-        function periksaReaksi() {
-            const reactionBox = document.getElementById('reaction-box');
-            const atomsInBox = reactionBox.querySelectorAll('.atom');
-            
-            if (atomsInBox.length === 0) {
-                tampilkanResult("error", "Reaktor Masih Kosong!", "Kamu belum menarik atom apa pun ke area kotak reaksi. Silakan bereksperimen dengan menarik elemen atom dari keranjang samping.");
+        function checkQ1() {
+            let totalFilled = document.querySelectorAll('.q1-dropzone .q1-item').length;
+            if(totalFilled < 9) {
+                showPopup(false, "Oops, masih ada kotak ciri-ciri zat yang belum dimasukkan ke wadah. Yuk, tarik semuanya ke atas!");
                 return;
             }
+            let isWrong = false;
+            document.querySelectorAll('.zone-padat .q1-item').forEach(el => { if(el.dataset.ans !== 'padat') isWrong = true; });
+            document.querySelectorAll('.zone-cair .q1-item').forEach(el => { if(el.dataset.ans !== 'cair') isWrong = true; });
+            document.querySelectorAll('.zone-gas .q1-item').forEach(el => { if(el.dataset.ans !== 'gas') isWrong = true; });
 
-            let counts = { "H": 0, "O": 0, "C": 0, "Na": 0, "Cl": 0 };
-            let uniqueTypes = 0;
-            let lastFoundType = "";
+            if(isWrong) {
+                showPopup(false, "Oops, sepertinya masih ada partikel yang salah masuk wadah. Yuk, coba cek lagi jarak dan gerakannya!");
+            } else {
+                showPopup(true, "Hebat! Kamu berhasil mengelompokkan semua ciri-ciri wujud zat dengan sangat akurat.");
+            }
+        }
 
-            atomsInBox.forEach(a => {
-                let type = a.getAttribute('data-atom');
-                if (counts[type] === 0) uniqueTypes++;
-                counts[type]++;
-                lastFoundType = type;
+        // --- 5. Logika Kuis 2 (Mengurutkan) ---
+        function dragQ2(ev) { ev.dataTransfer.setData('text', ev.target.innerText); }
+        function dropQ2(ev) {
+            ev.preventDefault();
+            const data = ev.dataTransfer.getData('text');
+            if(ev.target.classList.contains('q2-slot')) {
+                ev.target.innerText = data;
+                ev.target.dataset.val = data;
+                ev.target.classList.add('filled');
+            }
+        }
+        function checkQ2() {
+            let emptySlots = document.querySelectorAll('.q2-slot:not(.filled)').length;
+            if(emptySlots > 0) {
+                showPopup(false, "Kamu belum mengisi semua urutan wujud zat. Lengkapi semuanya terlebih dahulu ya!");
+                return;
+            }
+            const keys = [
+                ['PADAT', 'CAIR'], ['CAIR', 'GAS'], ['PADAT', 'GAS'], ['CAIR', 'PADAT'], ['GAS', 'CAIR']
+            ];
+            let isWrong = false;
+            for(let i=1; i<=5; i++) {
+                if(document.getElementById(`q2-s${i}-1`).dataset.val !== keys[i-1][0] || 
+                   document.getElementById(`q2-s${i}-2`).dataset.val !== keys[i-1][1]) {
+                    isWrong = true;
+                }
+            }
+            if(isWrong) {
+                showPopup(false, "Hmm, urutan wujud zatnya belum tepat. Coba bayangkan lagi peristiwanya terjadi dari wujud apa menjadi apa ya?");
+            } else {
+                showPopup(true, "Selamat! Kamu berhasil mengurutkan semua peristiwa perubahan wujud zat dengan sempurna.");
+            }
+        }
+
+        // --- 6. Logika Kuis 3 (Dropdown / Pilihan Ganda) ---
+        function checkQ3() {
+            const selects = document.querySelectorAll('.q3-select');
+            let allFilled = true;
+            let allCorrect = true;
+
+            selects.forEach(sel => {
+                if (sel.value === "") {
+                    allFilled = false;
+                } else if (sel.value !== sel.dataset.ans) {
+                    allCorrect = false;
+                }
             });
 
-            const totalAtoms = atomsInBox.length;
-
-            if (uniqueTypes === 1) {
-                const info = dataUnsur[lastFoundType];
-                tampilkanResult(
-                    "unsur", 
-                    `Koleksi Unsur: ${info.nama} (${lastFoundType})`, 
-                    `Hebat! Karena seluruh materi hanya terbentuk dari 1 jenis atom yang sejenis, materi ini mutlak dikelompokkan sebagai <b>UNSUR</b>.<br><br>
-                    📊 <b>Data Identitas Atom:</b><br>
-                    • Nama Elemen: ${info.nama}<br>
-                    • Nomor Atom: ${info.noAtom} <i>(Jumlah proton)</i><br>
-                    • Nomor Massa: ${info.massa} <i>(Inti atom)</i><br><br>
-                    <i>Kamu berhasil mengumpulkan total sebanyak ${totalAtoms} buah partikel atom ${info.nama}.</i>`
-                );
+            if (!allFilled) {
+                showPopup(false, "Masih ada pertanyaan yang belum dijawab. Klik kotak 'Pilih Jawaban' pada setiap baris ya!");
                 return;
             }
 
-            if (counts["H"] === 2 && counts["O"] === 1 && totalAtoms === 3) {
-                tampilkanResult("senyawa", "💧 Air (H<sub>2</sub>O)", "Sintesis Sukses! Kamu membentuk senyawa <b>Air</b>.<br>Zat cair jernih ini tersusun atas kombinasi ikatan kovalen antara dua atom Hidrogen dan satu atom Oksigen yang sangat penting bagi kehidupan sel di bumi.");
-            } else if (counts["Na"] === 1 && counts["Cl"] === 1 && totalAtoms === 2) {
-                tampilkanResult("senyawa", "🧂 Garam Dapur (NaCl)", "Sintesis Sukses! Kamu merangkai Natrium Klorida (<b>Garam Dapur</b>).<br>Gabungan dari logam Natrium padat yang sangat reaktif dan gas Klorin yang beracun, ketika terikat secara kimiawi berubah total menjadi kristal bumbu dapur aman konsumsi.");
-            } else if (counts["C"] === 1 && counts["O"] === 2 && totalAtoms === 3) {
-                tampilkanResult("senyawa", "💨 Karbon Dioksida (CO<sub>2</sub>)", "Sintesis Sukses! Ini adalah molekul gas <b>Karbon Dioksida</b>.<br>Senyawa gas sisa pembakaran dalam tubuh (respirasi) manusia dan hewan yang dihembuskan keluar, sekaligus zat vital bagi tanaman untuk memasak makanan (fotosintesis).");
-            } else if (counts["Na"] === 1 && counts["O"] === 1 && counts["H"] === 1 && totalAtoms === 3) {
-                tampilkanResult("senyawa", "🧼 Soda Api / Kaustik (NaOH)", "Sintesis Sukses! Kamu menyusun senyawa alkali kuat <b>Natrium Hidroksida</b>.<br>Zat korosif padat putih yang larut dalam air ini dimanfaatkan luas pada industri pembuatan sabun, detergen, dan pembersih pipa tersumbat.");
-            } else if (counts["C"] === 1 && counts["O"] === 1 && totalAtoms === 2) {
-                tampilkanResult("senyawa", "⚠️ Karbon Monoksida (CO)", "Sintesis Sukses! Kamu membuat senyawa gas <b>Karbon Monoksida</b>.<br>Gas yang sangat berbahaya, tidak berwarna, dan tidak berbau. Terbentuk dari hasil pembakaran karbon yang tidak sempurna, seperti pada emisi gas buang knalpot kendaraan bermotor.");
-            } else if (counts["H"] === 2 && counts["O"] === 2 && totalAtoms === 4) {
-                tampilkanResult("senyawa", "🧪 Hidrogen Peroksida (H<sub>2</sub>O<sub>2</sub>)", "Sintesis Sukses! Kamu menciptakan molekul <b>Hidrogen Peroksida</b>.<br>Zat cair bening dengan viskositas sedikit lebih kental daripada air. Senyawa ini bersifat sebagai oksidator kuat yang sangat ampuh digunakan sebagai agen pemutih atau antiseptik pembersih luka ringan.");
-            } else if (counts["H"] === 1 && counts["Cl"] === 1 && totalAtoms === 2) {
-                tampilkanResult("senyawa", "🧪 Asam Klorida (HCl)", "Sintesis Sukses! Ini adalah larutan asam kuat <b>Asam Klorida</b>.<br>Senyawa gas Hidrogen Klorida yang terlarut dalam air. Di alam, senyawa ini diproduksi alami di dalam lambung manusia dalam kadar tertentu untuk membantu mencerna makanan dan mematikan kuman penyakit.");
-            } else if (counts["C"] === 6 && counts["H"] === 12 && counts["O"] === 6 && totalAtoms === 24) {
-                tampilkanResult("senyawa", "🍎 Karbohidrat Glukosa (C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>)", "Luar Biasa Sempurna! Kamu berhasil merangkai senyawa organik kompleks: <b>Glukosa</b> (gula sederhana).<br>Kombinasi makro molekul yang mengagumkan! Glukosa diproduksi oleh tumbuhan hijau lewat proses fotosintesis dan berperan sebagai bahan bakar sumber energi paling utama untuk metabolisme makhluk hidup.");
+            if (!allCorrect) {
+                showPopup(false, "Wah, ada beberapa jawaban yang kurang tepat. Yuk baca lagi deskripsinya dan pilih proses yang benar!");
             } else {
-                tampilkanResult("error", "💥 Reaksi Tidak Stabil / Campuran Acak", "Kombinasi atom yang dimasukkan belum membentuk struktur molekul senyawa yang stabil atau belum dikenali dalam misi lab ini. Silakan bersihkan reaktor atau intip <b>Petunjuk Rumus</b> di kanan atas.");
+                showPopup(true, "Sempurna! Kamu telah memilih semua nama proses perubahan wujud dengan tepat.");
             }
-        }
-
-        function tampilkanResult(tipe, judul, deskripsi) {
-            const badge = document.getElementById('modal-badge');
-            badge.className = 'modal-type'; 
-            
-            if (tipe === 'unsur') {
-                badge.classList.add('type-unsur');
-                badge.innerText = "⭐ IDENTIFIKASI: UNSUR";
-            } else if (tipe === 'senyawa') {
-                badge.classList.add('type-senyawa');
-                badge.innerText = "🌟 IDENTIFIKASI: SENYAWA MUTLAK";
-            } else {
-                badge.classList.add('type-error');
-                badge.innerText = "💥 REAKSI GAGAL";
-            }
-
-            document.getElementById('modal-title').innerHTML = judul;
-            document.getElementById('modal-desc').innerHTML = deskripsi;
-            resultModal.style.display = 'flex';
         }
     </script>
-
-    <!-- POLYFILL TOUCH SCREEN (TIDAK BOLEH DIHAPUS AGAR BERFUNGSI DI IPAD/HP) -->
+    
+    <!-- POLYFILL UNTUK PERANGKAT SENTUH AGAR DRAG-AND-DROP BERFUNGSI MAKSIMAL -->
     <script src="https://bernardo-castilho.github.io/DragDropTouch/DragDropTouch.js"></script>
 </body>
 </html>
